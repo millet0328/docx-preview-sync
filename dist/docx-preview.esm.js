@@ -5515,6 +5515,7 @@ class HtmlRendererSync {
                 }
             }
             if (el.break == BreakType.Page) {
+                console.log('[html-renderer-sync] Manual page break found - fixing!');
                 currentPage.children = parseToTree(currentPage.stack);
                 currentPage.isSplit = false;
                 startNewPage();

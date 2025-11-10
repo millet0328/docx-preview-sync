@@ -827,6 +827,8 @@ export class HtmlRendererSync {
 			}
 			// page break
 			if ((el as WmlBreak).break == BreakType.Page) {
+				console.log('[html-renderer-sync] Manual page break found - fixing!');
+
 				// 将当前break元素左侧所有元素作为page的子元素
 				currentPage.children = parseToTree(currentPage.stack);
 
