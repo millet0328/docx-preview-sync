@@ -16,7 +16,7 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
-/* global Reflect, Promise, SuppressedError, Symbol */
+/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
 
 function __awaiter(thisArg, _arguments, P, generator) {
@@ -160,12 +160,7 @@ function parseRelationships(root, xml) {
 }
 
 const ns$2 = {
-    wordml: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-    drawingml: "http://schemas.openxmlformats.org/drawingml/2006/main",
-    picture: "http://schemas.openxmlformats.org/drawingml/2006/picture",
-    compatibility: "http://schemas.openxmlformats.org/markup-compatibility/2006",
-    math: "http://schemas.openxmlformats.org/officeDocument/2006/math"
-};
+    wordml: "http://schemas.openxmlformats.org/wordprocessingml/2006/main"};
 const LengthUsage = {
     Px: { mul: 1 / 9525, unit: "px" },
     Dxa: { mul: 1 / 20, unit: "pt" },
@@ -175,9 +170,7 @@ const LengthUsage = {
     Point: { mul: 1, unit: "pt" },
     RelativeRect: { mul: 1 / 100000, unit: "" },
     TablePercent: { mul: 0.02, unit: "%" },
-    LineHeight: { mul: 1 / 240, unit: "" },
     Opacity: { mul: 1 / 100000, unit: "" },
-    VmlEmu: { mul: 1 / 12700, unit: "" },
     degree: { mul: 1 / 60000, unit: "deg" },
 };
 function convertLength(val, usage = LengthUsage.Dxa, unit = true) {
@@ -1588,7 +1581,11 @@ class WordDocument {
     loadFont(id, key) {
         return __awaiter(this, void 0, void 0, function* () {
             const x = yield this.loadResource(this.fontTablePart, id, "uint8array");
-            return x ? this.blobToURL(new Blob([deobfuscate(x, key)])) : x;
+            if (!x)
+                return x;
+            const deobfuscated = deobfuscate(x, key);
+            const uint8Array = new Uint8Array(deobfuscated);
+            return this.blobToURL(new Blob([uint8Array]));
         });
     }
     blobToURL(blob) {
@@ -3912,7 +3909,6 @@ class Page {
 }
 
 const ns$1 = {
-    html: 'http://www.w3.org/1999/xhtml',
     svg: 'http://www.w3.org/2000/svg',
     mathML: 'http://www.w3.org/1998/Math/MathML',
 };
@@ -5028,7 +5024,6 @@ function findParent$1(elem, type) {
 }
 
 const ns = {
-    html: 'http://www.w3.org/1999/xhtml',
     svg: 'http://www.w3.org/2000/svg',
     mathML: 'http://www.w3.org/1998/Math/MathML',
 };
@@ -5115,7 +5110,7 @@ class HtmlRendererSync {
         const c = this.className;
         const styleText = `
 			.${c} { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif }
-			.${c}-wrapper { background: gray; padding: 30px; padding-bottom: 0px; display: flex; flex-flow: column; align-items: center; line-height:normal; font-weight:normal; } 
+			.${c}-wrapper { background: gray; padding: 30px; padding-bottom: 0px; display: flex; flex-flow: column; align-items: center; line-height:normal; font-weight:normal; }
 			.${c}-wrapper>section.${c} { background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); margin-bottom: 30px; }
 			.${c} { color: black; hyphens: auto; text-underline-position: from-font; }
 			section.${c} { box-sizing: border-box; display: flex; flex-flow: column nowrap; position: relative; overflow: hidden; }
@@ -5521,6 +5516,7 @@ class HtmlRendererSync {
             }
             if (el.break == BreakType.Page) {
                 currentPage.children = parseToTree(currentPage.stack);
+                currentPage.isSplit = false;
                 startNewPage();
             }
             if (el.type === DomType.SectionBreak) {

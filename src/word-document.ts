@@ -164,7 +164,13 @@ export class WordDocument {
 
 	async loadFont(id: string, key: string): Promise<string> {
 		const x = await this.loadResource(this.fontTablePart, id, "uint8array");
-		return x ? this.blobToURL(new Blob([deobfuscate(x, key)])) : x;
+		if (!x) return x;
+		const deobfuscated = deobfuscate(x, key);
+
+		// Create a new Uint8Array to ensure we have an ArrayBuffer (not SharedArrayBuffer)
+		const uint8Array = new Uint8Array(deobfuscated);
+
+		return this.blobToURL(new Blob([uint8Array]));
 	}
 
 	private blobToURL(blob: Blob): string | Promise<string> {

@@ -194,7 +194,7 @@ export class HtmlRendererSync {
 		const c = this.className;
 		const styleText = `
 			.${c} { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif }
-			.${c}-wrapper { background: gray; padding: 30px; padding-bottom: 0px; display: flex; flex-flow: column; align-items: center; line-height:normal; font-weight:normal; } 
+			.${c}-wrapper { background: gray; padding: 30px; padding-bottom: 0px; display: flex; flex-flow: column; align-items: center; line-height:normal; font-weight:normal; }
 			.${c}-wrapper>section.${c} { background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); margin-bottom: 30px; }
 			.${c} { color: black; hyphens: auto; text-underline-position: from-font; }
 			section.${c} { box-sizing: border-box; display: flex; flex-flow: column nowrap; position: relative; overflow: hidden; }
@@ -829,6 +829,12 @@ export class HtmlRendererSync {
 			if ((el as WmlBreak).break == BreakType.Page) {
 				// 将当前break元素左侧所有元素作为page的子元素
 				currentPage.children = parseToTree(currentPage.stack);
+
+				// Mark current page as needing overflow detection, since it was forcibly split
+				// by manual page break - this fixes issues with manual page breaks late in document
+				// causing one page to get way too much content
+				currentPage.isSplit = false;
+
 				// 开始新的Page
 				startNewPage();
 			}
